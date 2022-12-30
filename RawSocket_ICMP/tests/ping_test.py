@@ -28,7 +28,7 @@ class PingTest(unittest.TestCase):
     def testCheckData_true(self):
         ans = self.socket._check_data(
             b'\x08\x00\x00\x01\x00\x01\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69',
-            19802) # 4D5A
+            19802)  # 4D5A
         self.assertTrue(ans)
 
     def testCheckData_false(self):
@@ -46,6 +46,10 @@ class PingTest(unittest.TestCase):
         )
         ans = self.socket._create_packet(request)
         self.assertEqual(b'\x08\x00B\xac2\xd1\x00\x00AAAA', ans)
+
+        # 0800 42AC
+        # 32D1 0
+        # 4141 4141
 
     def testParsePacket_normal(self):
         reply = self.socket._parse_reply(

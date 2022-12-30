@@ -70,7 +70,6 @@ class ICMPSocket:
         '''
         Set the time to live of every IP packet originating from this
         socket.
-
         '''
         self._sock.setsockopt(
             socket.IPPROTO_IP,
@@ -79,20 +78,6 @@ class ICMPSocket:
 
     def _checksum(self, data):
         sum = 0
-
-        # TODO:
-        # Compute the checksum of an ICMP packet. Checksums are used to
-        # verify the integrity of packets.
-        #
-        # :type data: bytes
-        # :param data: The data you are going to send, calculate checksum
-        # according to this.
-        #
-        # :rtype: int
-        # :returns: checksum calculated from data
-        #
-        # Hint: if the length of data is even, add a b'\x00' to the end of data
-        # according to RFC
         n = len(data)
         m = n % 2  # 判断data长度是否是偶数字节
         sum = 0  # 记录(十进制)相加的结果
@@ -112,41 +97,37 @@ class ICMPSocket:
         return sum
 
     def _check_data(self, data, checksum):
-
-        # TODO:
-        # Verify the given data with checksum of an ICMP packet. Checksums are used to
-        # verify the integrity of packets.
-        #
-        # :type data: bytes
-        # :param data: The data you received, verify its correctness with checksum
-        #
-        # :type checksum: int
-        # :param checksum: The checksum you received, use it to verify data.
-        #
-        # :rtype: boolean
-        # :returns: whether the data matches the checksum
-        #
-        # Hint: if the length of data is even, add a b'\x00' to the end of data
-        # according to RFC
         result = self._checksum(data)
         return result == checksum
 
     def _create_packet(self, request: ICMPRequest):
-        id = request.id
-        sequence = request.sequence
+        id = request.id  # 13009 32D1
+        sequence = request.sequence  # 0
         payload = request.payload
         checksum = 0
-        # TODO:
-        # Build an ICMP packet from an ICMPRequest, you can get a sequence number and
-        # a payload.
-        #
-        # This method returns the newly created ICMP header concatenated
-        # to the payload passed in parameters.
-        #
-		# tips: the 'checksum' in ICMP header needs to be calculated and updated
-        # :rtype: bytes
-        # :returns: an ICMP header+payload in bytes format
-        return None
+        code = 0
+        type = 8
+        ans = type
+        ans = ans << 8
+        ans = ans + code   # type code
+        ans = ans << 16  # type code checksum
+        ans = ans << 16
+        ans = ans + id   # type code checksum id
+        ans = ans << 16
+        ans = ans + sequence  # type code checksum id seq
+        size = len(payload)
+        # print("*************")
+        # print(size)
+        ans = ans << size * 8
+
+        ans = ans + int.from_bytes(payload, 'big')
+        t = ans.to_bytes(8+size, 'big')
+        checksum = self._checksum(t)
+        # print(checksum)
+        checksum = checksum << (size * 8 + 4 * 8)
+        ans = ans + checksum
+        answer = ans.to_bytes(size + 8, 'big')
+        return answer
 
     def _parse_reply(self, packet, source, current_time):
         sequence = 0
