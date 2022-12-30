@@ -48,13 +48,14 @@ def ping(address,n=4, payload=None,id=None):
 			packets_sent += 1
 			seq += 1
 			try:
-				reply = sock.receive(request)  # receive reply
+				reply = sock.receive(request, timeout=PING_TIMEOUT)  # receive reply
 				if reply.code == 0 and reply.type == 0:  # is echo reply packet
 					rtts.append((reply.time - request.time) * 1000)
 			except Exception:
 				pass
 		except Exception:
 			pass
+		sleep(PING_INTERVAL)
 
 	sock.close()
 	if reply:
