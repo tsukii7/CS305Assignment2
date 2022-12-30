@@ -1,8 +1,8 @@
 import sys
 
-from models import *
+from RawSocket_ICMP.models import *
 from time import sleep
-from sockets import *
+from RawSocket_ICMP.sockets import *
 import argparse
 
 PING_INTERVAL = 0.05

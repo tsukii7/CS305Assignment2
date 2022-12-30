@@ -1,5 +1,6 @@
-from exceptions import *
-from utils import random_byte_message
+from RawSocket_ICMP.exceptions import *
+from RawSocket_ICMP.utils import random_byte_message
+
 
 
 class ICMPRequest:

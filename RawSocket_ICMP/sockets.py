@@ -1,10 +1,10 @@
 import array
 from struct import pack, unpack
 import platform as plt
-from models import ICMPReply, ICMPRequest
-from utils import *
+from RawSocket_ICMP.models import ICMPReply, ICMPRequest
+from RawSocket_ICMP.utils import *
 from time import time
-from exceptions import *
+from RawSocket_ICMP.exceptions import *
 
 
 class ICMPSocket:
@@ -128,8 +128,8 @@ class ICMPSocket:
         #
         # Hint: if the length of data is even, add a b'\x00' to the end of data
         # according to RFC
-
-        return False
+        result = self._checksum(data)
+        return result == checksum
 
     def _create_packet(self, request: ICMPRequest):
         id = request.id
@@ -200,8 +200,7 @@ class ICMPSocket:
                 family=self._sock.family,
                 type=self._sock.type)[0][4]
 
-            packet = self._create_packet(
-                request)
+            packet = self._create_packet(request)
 
             self._set_ttl(request.ttl)
             # self._set_traffic_class(request.traffic_class)

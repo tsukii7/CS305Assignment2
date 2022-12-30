@@ -6,7 +6,7 @@ from os import getpid
 from re import match
 from random import choices
 
-from exceptions import NameLookupError
+from RawSocket_ICMP.exceptions import NameLookupError
 
 
 PID = getpid()
