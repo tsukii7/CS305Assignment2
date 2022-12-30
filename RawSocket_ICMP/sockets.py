@@ -94,6 +94,7 @@ class ICMPSocket:
         # sum = (sum >> 16) + (sum & 0xffff)
         sum += (sum >> 16)  # 如果还有高于16位，将继续与低16位相加
         sum = ~sum & 0xffff  # 对sum取反(返回的是十进制)
+        print(sum.to_bytes(2, 'big'))
         return sum
 
     def _check_data(self, data, checksum):
@@ -130,9 +131,20 @@ class ICMPSocket:
         return answer
 
     def _parse_reply(self, packet, source, current_time):
+        data1 = packet[:22]
+        data2 = packet[24:]
+        data3 = b'\x00\x00'
+        t = data1 + data3 + data2
+        print(t)
+        check = packet[22:24]
+        print(check)
+        if not self._check_data(t, int.from_bytes(check, 'big')):
+            raise ICMPSocketError('Wrong Checksum')
+
         sequence = 0
         type = 0
         code = 0
+        id = 0
         # TODO:
         # Parse an ICMP reply from bytes.
         #
@@ -143,6 +155,18 @@ class ICMPSocket:
         #
         # :rtype: ICMPReply
         # :returns: an ICMPReply parsed from packet
+
+        # message = packet[20:28]
+        type = int.from_bytes(packet[20:21], 'big')
+        code = int.from_bytes(packet[21:22], 'big')
+        id = int.from_bytes(packet[24:26], 'big')
+        sequence = int.from_bytes(packet[26:28], 'big')
+        if type != 0:
+            id = int.from_bytes(packet[52:54], 'big')
+            sequence = int.from_bytes(packet[54:56], 'big')
+            print(id)
+            print(packet[52:54])
+
         return ICMPReply(
             source=source,
             id=id,
