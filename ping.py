@@ -9,7 +9,7 @@ PING_INTERVAL = 0.05
 PING_TIMEOUT = 3
 
 
-def ping(address,n=3, payload=None,id=None):
+def ping(address,n=4, payload=None,id=None):
 	if is_hostname(address):
 		address = resolve(address)[0]
 
