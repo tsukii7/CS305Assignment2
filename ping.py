@@ -15,7 +15,7 @@ def ping(address,n=4, payload=None,id=None):
 
 	sock = ICMPSocket()
 	id = id or unique_identifier()
-	payload = payload or random_byte_message(4)
+	payload = payload or random_byte_message(56)
 	# print(payload)
 	reply = None
 	packets_sent = 0
