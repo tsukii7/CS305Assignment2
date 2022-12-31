@@ -47,21 +47,25 @@ def tracert(address, id=None):
         ################################
 
         for _ in range(PING_COUNT):
-            request = ICMPRequest(address, id, seq, ttl=ttl)
+            request = ICMPRequest(destination=address,
+                                  id=id,
+                                  sequence=seq,
+                                  ttl=ttl)
             try:
                 sock.send(request)
                 packets_sent += 1
                 seq += 1
                 try:
                     reply = sock.receive(request, timeout=PING_TIMEOUT)
-                    if reply.type == 3 and reply.code == 3:  # 收到端口不可达 抵达目的地
+                    if reply.type == 0 and reply.code == 0:  # 收到回复 到达目的地
                         host_reached = True
                         rtts.append((reply.time - request.time) * 1000)
                     elif reply.type == 11 and reply.code == 0:  # ttl超时 未抵达目的地
                         rtts.append((reply.time - request.time) * 1000)
                 except Exception:
                     pass
-            except Exception:
+            except Exception as e:
+                print(e.args[0])
                 pass
             sleep(PING_INTERVAL)
 
