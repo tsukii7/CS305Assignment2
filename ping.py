@@ -41,6 +41,13 @@ def ping(address,n=4, payload=None,id=None):
 	# Hint: use ICMPSocket.send() to send packet and use ICMPSocket.receive() to receive
 	################################
 
+	if len(payload) % 4 == 1:
+		payload = b'\x00\x00\x00' + payload
+	elif len(payload) % 4 == 2:
+		payload = b'\x00\x00' + payload
+	elif len(payload) % 4 == 3:
+		payload = b'\x00' + payload
+
 	seq = 0  # sequence number
 	for _ in range(n):  # send n packets
 		request = ICMPRequest(address, id, seq, payload)  # create request
@@ -78,13 +85,7 @@ if __name__ == "__main__":
 	i = args.i
 	p = None
 	if args.p:
-		p = bytes(args.p, 'utf-8')
-	if len(p) % 4 == 1:
-		p = b'\x00\x00\x00' + p
-	elif len(p) % 4 == 2:
-		p = b'\x00\x00' + p
-	elif len(p) % 4 == 3:
-		p = b'\x00' + p
+		p = args.p.encode()
 	host = ping(target, n, p, i)
 	print(host.__str__())
 
