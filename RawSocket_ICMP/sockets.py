@@ -8,7 +8,6 @@ from RawSocket_ICMP.exceptions import *
 
 
 class ICMPSocket:
-
     __slots__ = '_sock', '_address', '_privileged'
 
     _IP_VERSION = 4
@@ -85,13 +84,14 @@ class ICMPSocket:
             # if i == 2:
             #     continue
             # if i < 8:
-            sum += data[i+1] + (data[i ] << 8)
+            sum += data[i + 1] + (data[i] << 8)
             # else:
             #     sum += (data[i+1]) + (data[i]) << 8  # 传入data以每两个字节（十六进制）通过ord转十进制，第一字节在低位，第二个字节在高位
         if m:  # 传入的data长度是奇数，将执行，且把这个字节（8位）加到前面的结果
             sum += data[-1]
         # # 将高于16位与低16位相加
         # sum = (sum >> 16) + (sum & 0xffff)
+        print(sum)
         sum += (sum >> 16)  # 如果还有高于16位，将继续与低16位相加
         sum = ~sum & 0xffff  # 对sum取反(返回的是十进制)
         print(sum.to_bytes(2, 'big'))
@@ -110,10 +110,10 @@ class ICMPSocket:
         type = 8
         ans = type
         ans = ans << 8
-        ans = ans + code   # type code
+        ans = ans + code  # type code
         ans = ans << 16  # type code checksum
         ans = ans << 16
-        ans = ans + id   # type code checksum id
+        ans = ans + id  # type code checksum id
         ans = ans << 16
         ans = ans + sequence  # type code checksum id seq
         size = len(payload)
@@ -122,41 +122,34 @@ class ICMPSocket:
         ans = ans << size * 8
 
         ans = ans + int.from_bytes(payload, 'big')
-        t = ans.to_bytes(8+size, 'big')
+        t = ans.to_bytes(8 + size, 'big')
         checksum = self._checksum(t)
-        # print(checksum)
         checksum = checksum << (size * 8 + 4 * 8)
         ans = ans + checksum
         answer = ans.to_bytes(size + 8, 'big')
         return answer
 
     def _parse_reply(self, packet, source, current_time):
-        data1 = packet[:22]
+        data1 = packet[20:22]
         data2 = packet[24:]
         data3 = b'\x00\x00'
         t = data1 + data3 + data2
-        print(t)
         check = packet[22:24]
-        print(check)
+
+        try:
+            if not self._check_data(t, int.from_bytes(check, 'big')):
+                raise ICMPSocketError('Wrong Checksum')
+        except:
+            return None
+
+        """
         if not self._check_data(t, int.from_bytes(check, 'big')):
             raise ICMPSocketError('Wrong Checksum')
-
+        """
         sequence = 0
         type = 0
         code = 0
         id = 0
-        # TODO:
-        # Parse an ICMP reply from bytes.
-        #
-        # Read sequence, type and code from packet 
-        #
-        # :type packet: bytes
-        # :param packet: IP packet with ICMP as its payload
-        #
-        # :rtype: ICMPReply
-        # :returns: an ICMPReply parsed from packet
-
-        # message = packet[20:28]
         type = int.from_bytes(packet[20:21], 'big')
         code = int.from_bytes(packet[21:22], 'big')
         id = int.from_bytes(packet[24:26], 'big')
@@ -276,8 +269,8 @@ class ICMPSocket:
                     current_time=current_time)
 
                 if (reply and not request or
-                    reply and request.id == reply.id and
-                    request.sequence == reply.sequence):
+                        reply and request.id == reply.id and
+                        request.sequence == reply.sequence):
                     return reply
 
         except socket.timeout:
@@ -294,6 +287,3 @@ class ICMPSocket:
         if self._sock:
             self._sock.close()
             self._sock = None
-
-
-
