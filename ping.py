@@ -9,13 +9,14 @@ PING_INTERVAL = 0.05
 PING_TIMEOUT = 3
 
 
-def ping(address,n=4, payload=None,id=None):
+def ping(address,n=3, payload=None,id=None):
 	if is_hostname(address):
 		address = resolve(address)[0]
 
 	sock = ICMPSocket()
 	id = id or unique_identifier()
-	payload = payload or random_byte_message(56)
+	payload = payload or random_byte_message(4)
+	# print(payload)
 	reply = None
 	packets_sent = 0
 	rtts = []
@@ -77,6 +78,14 @@ if __name__ == "__main__":
 	i = args.i
 	p = None
 	if args.p:
-		p = args.p.encode()
+		p = bytes(args.p, 'utf-8')
+	if len(p) % 4 == 1:
+		p = b'\x00\x00\x00' + p
+	elif len(p) % 4 == 2:
+		p = b'\x00\x00' + p
+	elif len(p) % 4 == 3:
+		p = b'\x00' + p
 	host = ping(target, n, p, i)
 	print(host.__str__())
+
+
